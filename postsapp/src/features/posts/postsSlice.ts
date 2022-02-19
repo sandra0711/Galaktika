@@ -22,8 +22,31 @@ export const getPosts = createAsyncThunk(
   'posts/fetchAllPosts',
   async () => {
     try {
-      const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts/?_limit=10');
       // The value we return becomes the `fulfilled` action payload
+      return await response.json();
+    } catch (e) {
+      throw new Error('ошибка')
+    }
+  }
+);
+
+export const fetchAddPost = createAsyncThunk(
+  'posts/fetchAddPost',
+  async ({ title, body }: any) => {
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts', {
+        method: 'POST',
+        body: JSON.stringify({
+          userId: 1,
+          id: Math.random(),
+          title: title,
+          body: body,
+        }),
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+      });
       return await response.json();
     } catch (e) {
       throw new Error('ошибка')
@@ -51,7 +74,21 @@ export const postsSlice = createSlice({
       .addCase(getPosts.rejected, (state, action) => {
         state.status = 'idle';
         console.log(action.error?.message);
+      })
+
+      .addCase(fetchAddPost.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchAddPost.fulfilled, (state, action) => {
+        state.status = 'idle';
+        state.posts.push(action.payload)
+      })
+      .addCase(fetchAddPost.rejected, (state, action) => {
+        state.status = 'idle';
+        console.log(action.error?.message);
       });
+
+
   },
 });
 
