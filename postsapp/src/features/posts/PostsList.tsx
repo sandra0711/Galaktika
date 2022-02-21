@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Form, Input, List, Skeleton } from 'antd';
+import { Modal, Button, Form, Input, List } from 'antd';
 
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import PostItem from './PostItem';
@@ -19,12 +19,12 @@ export function PostsList() {
 
   const showModal = () => { setIsModalVisible(true) };
   const handleCancel = () => { setIsModalVisible(false) };
-  const handleOk = () => { setIsModalVisible(false) };
+  const handleOk = (title: string, body: string) => {
+    dispatch(fetchAddPost({ title, body }));
+    setIsModalVisible(false)
+  };
   const { TextArea } = Input;
 
-  const handleAdd = (title: string, body: string) => {
-    dispatch(fetchAddPost({ title, body }));
-  }
   const onFinish = (values: any) => {
     console.log('Success:', values);
   };
@@ -39,7 +39,7 @@ export function PostsList() {
   return (
     <>
       <Button type="primary" onClick={showModal}>Добавить пост</Button>
-      <Modal title="Новый пост" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+      <Modal title="Новый пост" visible={isModalVisible} onOk={() => handleOk(title, body)} onCancel={handleCancel}>
         <Form
           name="basic"
           labelCol={{ span: 6 }}
@@ -64,27 +64,14 @@ export function PostsList() {
           >
             <TextArea rows={4} value={body} onChange={e => setBody(e.target.value)} />
           </Form.Item>
-
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit" onClick={() => handleAdd(title, body)}>
-              Добавить
-            </Button>
-          </Form.Item>
         </Form>
-        );
       </Modal>
 
       <List
         itemLayout="horizontal"
         dataSource={posts}
         renderItem={post => (
-          <List.Item actions={[<a key="list-loadmore-edit">править</a>, <a key="list-loadmore-more">удалить</a>]}
-          >
-            <List.Item.Meta
-              title={post.title}
-              description={post.body}
-            />
-          </List.Item>
+          <PostItem post={post} />
         )}
       />
     </>

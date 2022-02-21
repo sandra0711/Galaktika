@@ -52,6 +52,42 @@ export const fetchAddPost = createAsyncThunk(
       throw new Error('ошибка')
     }
   }
+)
+
+export const fetchEditPost = createAsyncThunk(
+  'posts/fetchEditPost',
+  async ({ title, body }: any) => {
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts/:id', {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: title,
+          body: body,
+        }),
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+      });
+      return await response.json();
+    } catch (e) {
+      throw new Error('ошибка')
+    }
+  }
+)
+
+
+export const fetchDeletePost = createAsyncThunk(
+  'posts/fetchDeletePost',
+  async (id: number) => {
+    try {
+      await fetch('https://jsonplaceholder.typicode.com/posts/:id', { method: 'DELETE' });
+      console.log(id);
+
+      return id;
+    } catch (e) {
+      throw new Error('ошибка')
+    }
+  }
 );
 
 export const postsSlice = createSlice({
@@ -72,6 +108,19 @@ export const postsSlice = createSlice({
         state.posts = action.payload;
       })
       .addCase(getPosts.rejected, (state, action) => {
+        state.status = 'idle';
+        console.log(action.error?.message);
+      })
+
+      .addCase(fetchDeletePost.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchDeletePost.fulfilled, (state, action) => {
+        const index = state.posts.findIndex(el => el.id === action.payload);
+        state.posts.splice(index, 1);
+        state.status = 'idle';
+      })
+      .addCase(fetchDeletePost.rejected, (state, action) => {
         state.status = 'idle';
         console.log(action.error?.message);
       })
